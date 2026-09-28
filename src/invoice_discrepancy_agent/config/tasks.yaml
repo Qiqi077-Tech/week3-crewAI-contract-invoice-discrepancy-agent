@@ -1,0 +1,46 @@
+extract_contract_terms:
+  description: >
+    Read the purchase terms and conditions at {contract_pdf}. Use contract_terms_parser to get
+    structured terms, and pdf_text_reader to confirm them against the raw text. Correct any
+    field the parser missed or got wrong.
+  expected_output: >
+    Structured contract terms: vendor, governed invoice number, each contracted item with its
+    unit price, payment net days, allowed payment methods, the tax clause and other relevant terms.
+  agent: contract_analyst
+
+extract_invoice_data:
+  description: >
+    Read the invoice at {invoice_pdf}. Use invoice_parser to get structured data, and
+    pdf_text_reader to confirm it against the raw text. Correct any field the parser missed.
+  expected_output: >
+    Structured invoice data: vendor, bill-to, invoice number, invoice and due dates (ISO),
+    payment terms and method, every line item (description, qty, unit price, amount),
+    subtotal, tax rate, tax amount and total due.
+  agent: invoice_analyst
+
+audit_discrepancies:
+  description: >
+    Call discrepancy_calculator with contract_pdf_path={contract_pdf} and
+    invoice_pdf_path={invoice_pdf}. Cross-check its output against the extracted contract
+    terms and invoice data from the previous tasks. If the two disagree, trust the raw
+    document text and explain the correction in the recommendation. Return the full result.
+  expected_output: >
+    A complete discrepancy report object: item comparisons, discrepancies with expected,
+    actual, variance, severity and explanation, checks passed, totals and a recommendation.
+  agent: discrepancy_auditor
+
+write_report:
+  description: >
+    Write the final discrepancy report for invoice {invoice_pdf} against {contract_pdf}
+    using only the auditor's findings. Include these sections:
+    1. Executive summary (verdict, count of discrepancies, net financial impact, whether totals mask line errors).
+    2. Document overview (vendor, buyer, invoice number, dates, payment terms).
+    3. Item-by-item comparison table (Item | Qty | Contract price | Invoiced price | Variance/unit | Line impact | Status).
+    4. Discrepancy details, ordered by severity.
+    5. Totals reconciliation (invoiced vs expected subtotal, tax, total).
+    6. Checks passed.
+    7. Recommendation and next steps for accounts payable.
+  expected_output: >
+    A Markdown document with the sections above. No code fences around the whole document.
+  agent: report_writer
+  output_file: output/discrepancy_report.md

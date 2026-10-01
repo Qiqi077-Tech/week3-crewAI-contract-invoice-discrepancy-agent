@@ -50,6 +50,15 @@ cp .env.example .env   # add your GOOGLE_API_KEY; MODEL defaults to gemini/gemin
 
 Outputs go to `output/`: `discrepancy_report.md` and `discrepancy_findings.json`.
 
+## Inspect the tools over MCP
+
+`mcp_server.py` exposes the four tools above as a stdio MCP server (relative PDF paths resolve
+against the project root):
+
+```bash
+npx @modelcontextprotocol/inspector .venv/bin/invoice-mcp-server
+```
+
 ## Tests
 
 ```bash

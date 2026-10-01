@@ -17,6 +17,7 @@ dev = ["pytest>=8"]
 
 [project.scripts]
 discrepancy-report = "invoice_discrepancy_agent.main:run"
+invoice-mcp-server = "invoice_discrepancy_agent.mcp_server:main"
 
 [build-system]
 requires = ["hatchling"]

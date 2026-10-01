@@ -32,7 +32,7 @@ Checks performed:
 ```bash
 uv venv -p 3.12 .venv
 uv pip install --python .venv/bin/python -e ".[dev]"
-cp .env.example .env   # add your GOOGLE_API_KEY; MODEL defaults to gemini/gemini-2.5-flash
+cp .env.example .env   # add your GOOGLE_API_KEY; MODEL defaults to gemini/gemini-3.5-flash-lite
 ```
 
 ## Run

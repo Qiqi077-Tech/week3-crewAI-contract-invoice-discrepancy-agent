@@ -12,7 +12,7 @@ from mcp import StdioServerParameters
 from .models import ContractTerms, DiscrepancyReport, InvoiceData
 from .tools import ContractTermsTool, DiscrepancyCalculatorTool, InvoiceParserTool, PdfTextTool
 
-DEFAULT_MODEL = "gemini/gemini-2.5-flash"
+DEFAULT_MODEL = "gemini/gemini-3.5-flash-lite"
 
 # Week 4 MCP server (https://github.com/Qiqi077-Tech/Week4-MCP_Server), cloned next to this repo
 # by default. Override with MCP_SERVER_DIR. It provides the `calculate` and `analyze_text` tools.
@@ -22,7 +22,15 @@ log = logging.getLogger(__name__)
 
 
 def build_llm() -> LLM:
-    return LLM(model=os.getenv("MODEL", DEFAULT_MODEL), temperature=0)
+    model = os.getenv("MODEL", DEFAULT_MODEL)
+    if not model.startswith("gemini/"):
+        return LLM(model=model, temperature=0)
+    # Gemini returns 503 "high demand" and free-tier 429s in short bursts; CrewAI retries
+    # immediately, so let the Google client back off (5s, 10s, ... up to 60s) instead.
+    from google.genai import types
+
+    retry = types.HttpRetryOptions(attempts=6, initial_delay=5, max_delay=60, http_status_codes=[429, 503])
+    return LLM(model=model, temperature=0, client_params={"http_options": types.HttpOptions(retry_options=retry)})
 
 
 def build_mcp_server_params() -> StdioServerParameters | None:
@@ -89,4 +97,7 @@ class InvoiceDiscrepancyCrew:
 
     @crew
     def crew(self) -> Crew:
-        return Crew(agents=self.agents, tasks=self.tasks, process=Process.sequential, verbose=True)
+        # MAX_RPM throttles LLM calls, e.g. 4 to stay under the Gemini free tier's 5 requests/minute.
+        max_rpm = int(os.environ["MAX_RPM"]) if os.getenv("MAX_RPM") else None
+        return Crew(agents=self.agents, tasks=self.tasks, process=Process.sequential, max_rpm=max_rpm,
+                    verbose=True)

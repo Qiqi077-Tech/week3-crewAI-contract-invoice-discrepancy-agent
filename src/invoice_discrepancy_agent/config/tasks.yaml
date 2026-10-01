@@ -23,7 +23,9 @@ audit_discrepancies:
     Call discrepancy_calculator with contract_pdf_path={contract_pdf} and
     invoice_pdf_path={invoice_pdf}. Cross-check its output against the extracted contract
     terms and invoice data from the previous tasks. If the two disagree, trust the raw
-    document text and explain the correction in the recommendation. Return the full result.
+    document text and explain the correction in the recommendation. If you state any figure
+    that the calculator did not return directly (e.g. a net impact or a percentage), verify it
+    with the calculate tool first. Return the full result.
   expected_output: >
     A complete discrepancy report object: item comparisons, discrepancies with expected,
     actual, variance, severity and explanation, checks passed, totals and a recommendation.
@@ -40,6 +42,8 @@ write_report:
     5. Totals reconciliation (invoiced vs expected subtotal, tax, total).
     6. Checks passed.
     7. Recommendation and next steps for accounts payable.
+    Before finishing, run analyze_text with operation "stats" on the executive summary and
+    shorten it if it is over 120 words.
   expected_output: >
     A Markdown document with the sections above. No code fences around the whole document.
   agent: report_writer

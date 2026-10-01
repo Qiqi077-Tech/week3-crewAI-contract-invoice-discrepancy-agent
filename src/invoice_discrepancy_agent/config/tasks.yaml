@@ -23,9 +23,10 @@ audit_discrepancies:
     Call discrepancy_calculator with contract_pdf_path={contract_pdf} and
     invoice_pdf_path={invoice_pdf}. Cross-check its output against the extracted contract
     terms and invoice data from the previous tasks. If the two disagree, trust the raw
-    document text and explain the correction in the recommendation. If you state any figure
-    that the calculator did not return directly (e.g. a net impact or a percentage), verify it
-    with the calculate tool first. Return the full result.
+    document text and explain the correction in the recommendation. Then call the calculate
+    tool once to compute the net financial impact (total overcharge minus total undercharge)
+    and report that result. Take every other number from discrepancy_calculator as-is.
+    Return the full result.
   expected_output: >
     A complete discrepancy report object: item comparisons, discrepancies with expected,
     actual, variance, severity and explanation, checks passed, totals and a recommendation.

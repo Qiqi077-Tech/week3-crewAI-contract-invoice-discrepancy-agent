@@ -16,7 +16,7 @@ DEFAULT_MODEL = "gemini/gemini-3.5-flash-lite"
 
 # Week 4 MCP server (https://github.com/Qiqi077-Tech/Week4-MCP_Server), cloned next to this repo
 # by default. Override with MCP_SERVER_DIR. It provides the `calculate` and `analyze_text` tools.
-MCP_SERVER_DIR = Path(os.getenv("MCP_SERVER_DIR", Path(__file__).resolve().parents[3] / "Week4-MCP_Server"))
+MCP_SERVER_DIR = Path(os.getenv("MCP_SERVER_DIR") or Path(__file__).resolve().parents[3] / "Week4-MCP_Server")
 
 log = logging.getLogger(__name__)
 
@@ -35,9 +35,13 @@ def build_llm() -> LLM:
 
 def build_mcp_server_params() -> StdioServerParameters | None:
     """Launch the MCP server over stdio with its own venv; None if it is not installed."""
-    python, script = MCP_SERVER_DIR / ".venv" / "bin" / "python", MCP_SERVER_DIR / "server.py"
-    if not (python.exists() and script.exists()):
-        log.warning("MCP server not found at %s; running without MCP tools.", MCP_SERVER_DIR)
+    script = MCP_SERVER_DIR / "server.py"
+    # .venv/bin/python on macOS/Linux, .venv\Scripts\python.exe on Windows.
+    candidates = [MCP_SERVER_DIR / ".venv" / "bin" / "python", MCP_SERVER_DIR / ".venv" / "Scripts" / "python.exe"]
+    python = next((p for p in candidates if p.exists()), None)
+    if python is None or not script.exists():
+        log.warning("MCP server not found at %s (needs server.py and a .venv); running without MCP tools. "
+                    "See 'Week 4 MCP server' in the README.", MCP_SERVER_DIR)
         return None
     return StdioServerParameters(command=str(python), args=[str(script)])
 
